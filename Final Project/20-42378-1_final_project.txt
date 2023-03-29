@@ -1,0 +1,50 @@
+data <- read.csv("C:\\diabetes.csv")
+str(data)
+summary(data)
+
+data[,'Outcome']=factor(data[,'Outcome'])
+str(data)
+
+data.subset <- data[c('Pregnancies','Glucose','BloodPressure','SkinThickness','Insulin','BMI','DiabetesPedigreeFunction','Age','Outcome')]
+head(data.subset)
+
+data_norm_func <- function(x){
+  
+  ((x - min(x))/ (max(x)-min(x)))
+  
+}
+
+data.subset.n <- as.data.frame(lapply(data.subset[,1:8],data_norm_func)) 
+str(data.subset.n)
+summary(data.subset.n)
+
+set.seed(146)
+p <- 0.8 
+train <- sample(nrow(data.subset.n),nrow(data.subset.n)*p)
+str(train) 
+summary(train) 
+updated_data.train <- data.subset[train,] 
+updated_data.val <- data.subset[-train,] 
+str(updated_data.train)
+str(updated_data.val)
+
+updated_data.train_labels <- data.subset[train,9] 
+updated_data.val_labels <- data.subset[-train,9]
+str(updated_data.train_labels)
+str(updated_data.val_labels)
+NROW(updated_data.train_labels)
+NROW(updated_data.val_labels)
+
+
+library(class)  
+Ypred_knn=knn(updated_data.train,  
+              updated_data.val,    
+              cl=updated_data.train_labels,                  
+              k=25)                            
+
+confusion=table(Ypred_knn,updated_data.val_labels) 
+confusion
+sum(diag(confusion))/nrow(updated_data.val)
+
+library('caret')
+confusionMatrix(Ypred_knn,updated_data.val_labels)
